@@ -1,6 +1,13 @@
 import pytest
 from model import Question
 
+@pytest.fixture
+def question_with_choices():
+    question = Question(title='q1', max_selections=2)
+    question.add_choice('a', is_correct=True)
+    question.add_choice('b')
+    question.add_choice('c', is_correct=True)
+    return question
 
 def test_create_question():
     question = Question(title='q1')
@@ -115,3 +122,13 @@ def test_correct_selected_choices_rejects_too_many_selections():
 
     with pytest.raises(Exception):
         question.correct_selected_choices([first_choice.id, second_choice.id])
+
+def test_fixture_creates_question_with_multiple_choices(question_with_choices):
+    assert [choice.text for choice in question_with_choices.choices] == ['a', 'b', 'c']
+
+def test_fixture_question_corrects_multiple_selected_choices(question_with_choices):
+    selected_choice_ids = [choice.id for choice in question_with_choices.choices]
+
+    assert question_with_choices.correct_selected_choices(selected_choice_ids[:2]) == [
+        selected_choice_ids[0]
+    ]
